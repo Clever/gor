@@ -168,6 +168,14 @@ func (c *HTTPClient) Send(data []byte) (response []byte, err error) {
 		Debug("[HTTPClient] Sending:", string(data))
 	}
 
+	// The last 14 characters of each Gor payload are zeroed. These zeroes causes ALBs
+	// to return a 400 for the subsequent request (the original request works because its
+	// content-length header stops the processing). We're not totally sure where the junk
+	// comes from, but for now let's just get rid of it.
+	if data[len(data)-1] == 0 {
+		data = data[0 : len(data)-14]
+	}
+
 	if _, err = c.conn.Write(data); err != nil {
 		Debug("[HTTPClient] Write error:", err, c.baseURL)
 		response = errorPayload(HTTP_TIMEOUT)
