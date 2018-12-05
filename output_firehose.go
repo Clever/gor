@@ -22,7 +22,7 @@ var batchSize = 50
 
 // NewFirehoseOutput constructor for FirehoseOutput, accepts firehose stream name
 func NewFirehoseOutput(streamName string) io.Writer {
-	fatalUnlessCredentials()
+	fatalUnlessRegion()
 	return &FirehoseOutput{
 		fh:         firehose.New(session.New(), aws.NewConfig().WithRegion(os.Getenv("AWS_REGION"))),
 		streamName: streamName,
@@ -58,9 +58,8 @@ func (f *FirehoseOutput) Write(data []byte) (n int, err error) {
 	return len(dataCopy), nil
 }
 
-// fatalUnlessCredentials logs and exits unless required env vars are present
-// There are other ways of providing AWS authentication but we don't support them at present
-func fatalUnlessCredentials() {
+// fatalUnlessRegion logs and exits unless region env vars are present
+func fatalUnlessRegion() {
 	if os.Getenv("AWS_REGION") == "" {
 		log.Fatal("Required env var: AWS_REGION")
 	}
